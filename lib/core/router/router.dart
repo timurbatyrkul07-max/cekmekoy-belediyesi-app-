@@ -1,6 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../features/assembly/pages/assembly_page.dart';
+import '../../features/corporate/pages/brands_page.dart';
+import '../../features/corporate/pages/committee_page.dart';
+import '../../features/corporate/pages/council_page.dart';
+import '../../features/corporate/pages/deputy_mayors_page.dart';
+import '../../features/corporate/pages/ethics_committee_page.dart';
+import '../../features/corporate/pages/eys_page.dart';
+import '../../features/corporate/pages/kvkk_page.dart';
+import '../../features/corporate/pages/organization_chart_page.dart';
+import '../../features/corporate/pages/policies_page.dart';
+import '../../features/corporate/pages/press_page.dart';
+import '../../features/corporate/pages/publications_page.dart';
+import '../../features/corporate/pages/regulations_page.dart';
+import '../../features/corporate/pages/sister_cities_page.dart';
+import '../../features/corporate/pages/strategic_plan_page.dart';
+import '../../features/corporate/pages/vision_mission_page.dart';
 import '../../features/department/pages/department_detail_page.dart';
+import '../../features/department/pages/departments_page.dart';
+import '../../features/facilities/pages/facilities_page.dart';
+import '../../features/landmarks/pages/parks_page.dart';
 import '../../features/events/pages/events_calendar_page.dart';
 import '../../features/gallery/pages/gallery_page.dart';
 import '../../features/mayor/pages/mayor_page.dart';
@@ -45,14 +63,16 @@ class AppRouter {
     '/ebelediye': _RouteConfig.web(title: 'E-Belediye', url: '${_portal}index.php?wwsayfa=25'),
     '/keos': _RouteConfig.web(title: 'KEOS Kent Rehberi', url: 'https://webgis.cekmekoy.bel.tr/keos/'),
     '/contacts': _RouteConfig.web(title: 'Telefon Rehberi', url: 'https://bulutkbs.gov.tr/Rehber/#/app?39430320'),
-    '/tour': _RouteConfig.web(title: '360° Sanal Tur', url: 'https://www.cekmekoy.bel.tr/'),
+    '/tour': _RouteConfig.web(title: '360° Sanal Tur', url: 'https://www.cekmekoy.bel.tr/360/index.html'),
     '/wifi': _RouteConfig.web(title: 'Ücretsiz Wifi Noktaları', url: 'https://www.cekmekoy.bel.tr/'),
     '/iett': _RouteConfig.web(title: 'İETT Saatleri', url: 'https://iett.istanbul/'),
     '/weekly': _RouteConfig.web(title: 'Haftanın Özeti', url: 'https://www.cekmekoy.bel.tr/'),
-    '/services': _RouteConfig.web(title: 'Hizmet Rehberi', url: 'https://www.cekmekoy.bel.tr/hizmetler'),
   };
 
-  static void open(BuildContext context, String route) {
+  static bool _reopenAfterPop = false;
+
+  static void open(BuildContext context, String route, {bool fromDrawer = false}) {
+    _reopenAfterPop = fromDrawer;
     if (route == '/mayor') {
       _push(context, const MayorPage());
       return;
@@ -94,11 +114,14 @@ class AppRouter {
       return;
     }
     if (route == '/academy') {
-      _push(context, _coursesPage());
+      _push(context, const WebViewPage(
+        title: 'Çekmeköy Akademi',
+        url: 'https://akademi.cekmekoy.bel.tr',
+      ));
       return;
     }
     if (route == '/parks') {
-      _push(context, _staticListPage('Parklarımız', _parks));
+      _push(context, const ParksPage());
       return;
     }
     if (route == '/mosques') {
@@ -110,19 +133,81 @@ class AppRouter {
       return;
     }
     if (route == '/facilities') {
-      _push(context, _staticListPage('Sosyal Tesisler', _facilities));
-      return;
-    }
-    if (route == '/brands') {
-      _push(context, _staticListPage('Çekmeköy Markaları', _brands));
+      _push(context, const FacilitiesPage());
       return;
     }
     if (route == '/album') {
       _push(context, const GalleryPage());
       return;
     }
-    if (route == '/departments') {
-      _push(context, _departmentsPage());
+    if (route == '/departments' || route == '/services') {
+      _push(context, const DepartmentsPage());
+      return;
+    }
+    if (route == '/deputies') {
+      _push(context, const DeputyMayorsPage());
+      return;
+    }
+    if (route == '/council') {
+      _push(context, const CouncilPage());
+      return;
+    }
+    if (route == '/encumen') {
+      _push(context, const CommitteePage());
+      return;
+    }
+    if (route == '/ethics') {
+      _push(context, const EthicsCommitteePage());
+      return;
+    }
+    if (route == '/eys') {
+      _push(context, const EysPage());
+      return;
+    }
+    if (route == '/vision') {
+      _push(context, const VisionMissionPage());
+      return;
+    }
+    if (route == '/policies') {
+      _push(context, const PoliciesPage());
+      return;
+    }
+    if (route == '/strategy') {
+      _push(context, const WebViewPage(
+        title: 'Stratejik Plan',
+        url: 'https://www.cekmekoy.bel.tr/kurumsal/stratejik-plan-ve-performans-programlari',
+      ));
+      return;
+    }
+    if (route == '/regulations') {
+      _push(context, const WebViewPage(
+        title: 'Mevzuat',
+        url: 'https://www.cekmekoy.bel.tr/kurumsal/liste/mevzuat',
+      ));
+      return;
+    }
+    if (route == '/publications') {
+      _push(context, const PublicationsPage());
+      return;
+    }
+    if (route == '/sister-cities') {
+      _push(context, const SisterCitiesPage());
+      return;
+    }
+    if (route == '/brands') {
+      _push(context, const BrandsPage());
+      return;
+    }
+    if (route == '/press') {
+      _push(context, const PressPage());
+      return;
+    }
+    if (route == '/org-chart') {
+      _push(context, const OrganizationChartPage());
+      return;
+    }
+    if (route == '/kvkk') {
+      _push(context, const KvkkPage());
       return;
     }
     final cfg = _routes[route];
@@ -134,8 +219,19 @@ class AppRouter {
   }
 
   static void _push(BuildContext context, Widget page) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
+    final shouldReopen = _reopenAfterPop;
+    _reopenAfterPop = false;
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => page))
+        .then((_) {
+      if (shouldReopen) {
+        Future.microtask(() => _homeScaffoldKey?.currentState?.openEndDrawer());
+      }
+    });
   }
+
+  static GlobalKey<ScaffoldState>? _homeScaffoldKey;
+  static set homeScaffoldKey(GlobalKey<ScaffoldState> k) => _homeScaffoldKey = k;
 
   static Widget _newsListPage() => CardListPage(title: 'Haberler', items: ContentData.news);
   static Widget _eventsListPage() => CardListPage(title: 'Etkinlikler', items: ContentData.events);
@@ -145,27 +241,6 @@ class AppRouter {
 
   static Widget _staticListPage(String title, List<MenuListItem> items) =>
       MenuListPage(title: title, items: items, searchable: true);
-
-  static Widget _departmentsPage() {
-    return MenuListPage(
-      title: 'Müdürlükler',
-      searchable: true,
-      items: DepartmentData.departments
-          .map((d) => MenuListItem(
-                label: d.name,
-                icon: Icons.business_center,
-                onTap: () {
-                  _navKey.currentState?.push(
-                    MaterialPageRoute(builder: (_) => DepartmentDetailPage(department: d)),
-                  );
-                },
-              ))
-          .toList(),
-    );
-  }
-
-  static final _navKey = GlobalKey<NavigatorState>();
-  static GlobalKey<NavigatorState> get navigatorKey => _navKey;
 
   static Widget _placeholder(String route) => Scaffold(
         appBar: AppBar(title: Text(route)),

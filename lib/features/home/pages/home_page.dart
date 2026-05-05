@@ -10,7 +10,11 @@ import '../../../shared/data/mock_data.dart';
 import '../../drawer/app_drawer.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/bottom_action_bar.dart';
+import '../widgets/async_content_section.dart';
 import '../widgets/horizontal_content_section.dart';
+import '../../announcements/data/announcements_api.dart';
+import '../../events/data/events_api.dart';
+import '../../news/data/news_api.dart';
 import '../widgets/promo_cards.dart';
 import '../widgets/quick_actions_grid.dart';
 import '../widgets/story_circles.dart';
@@ -19,10 +23,14 @@ import '../widgets/weather_widget.dart';
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
+  static final scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    AppRouter.homeScaffoldKey = scaffoldKey;
     final unread = ref.watch(unreadCountProvider);
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: AppColors.background,
       endDrawer: const AppDrawer(),
       body: SafeArea(
@@ -55,14 +63,16 @@ class HomePage extends ConsumerWidget {
                     const SizedBox(height: 16),
                     const PromoCards(),
                     const SizedBox(height: 28),
-                    HorizontalContentSection(
+                    AsyncContentSection(
                       title: 'Güncel Haberler',
-                      items: ContentData.news,
+                      provider: newsListProvider,
+                      fallback: ContentData.news,
                     ),
                     const SizedBox(height: 24),
-                    HorizontalContentSection(
+                    AsyncContentSection(
                       title: 'Etkinlikler',
-                      items: ContentData.events,
+                      provider: eventsListProvider,
+                      fallback: ContentData.events,
                     ),
                     const SizedBox(height: 24),
                     HorizontalContentSection(
@@ -71,9 +81,10 @@ class HomePage extends ConsumerWidget {
                       showDate: false,
                     ),
                     const SizedBox(height: 24),
-                    HorizontalContentSection(
+                    AsyncContentSection(
                       title: 'Duyurular',
-                      items: ContentData.announcements,
+                      provider: announcementsListProvider,
+                      fallback: ContentData.announcements,
                     ),
                     const SizedBox(height: 32),
                   ],

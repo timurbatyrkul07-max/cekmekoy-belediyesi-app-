@@ -51,7 +51,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       trailing: const Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 20),
                       onTap: () {
                         Navigator.of(context).pop();
-                        AppRouter.open(context, '/settings');
+                        AppRouter.open(context, '/settings', fromDrawer: true);
                       },
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                     ),
@@ -92,23 +92,40 @@ class _AppDrawerState extends State<AppDrawer> {
         borderRadius: BorderRadius.circular(16),
         onTap: () {
           Navigator.of(context).pop();
-          AppRouter.open(context, '/mayor');
+          AppRouter.open(context, '/mayor', fromDrawer: true);
         },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
         children: [
-          ClipOval(
-            child: Image.asset(
-              AppStrings.mayorPhoto,
-              width: 52,
-              height: 52,
-              fit: BoxFit.cover,
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.accent, width: 2),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: ClipOval(
+                child: Image.asset(
+                  AppStrings.mayorPhoto,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -116,19 +133,24 @@ class _AppDrawerState extends State<AppDrawer> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  AppStrings.mayorName,
-                  style: AppTextStyles.bodyBold.copyWith(color: Colors.white),
+                RichText(
+                  text: TextSpan(
+                    style: AppTextStyles.bodyBold,
+                    children: const [
+                      TextSpan(text: 'Orhan ', style: TextStyle(color: AppColors.primary)),
+                      TextSpan(text: 'ÇERKEZ', style: TextStyle(color: AppColors.accent)),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   AppStrings.mayorTitle,
-                  style: AppTextStyles.caption.copyWith(color: Colors.white70),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.white),
+          const Icon(Icons.chevron_right, color: AppColors.primary),
         ],
       ),
         ),
@@ -156,7 +178,7 @@ class _AppDrawerState extends State<AppDrawer> {
       borderRadius: BorderRadius.circular(12),
       onTap: () {
         Navigator.of(context).pop();
-        AppRouter.open(context, route);
+        AppRouter.open(context, route, fromDrawer: true);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -223,7 +245,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     trailing: const Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 20),
                     onTap: () {
                       Navigator.of(context).pop();
-                      AppRouter.open(context, item.route);
+                      AppRouter.open(context, item.route, fromDrawer: true);
                     },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                     dense: true,
@@ -244,7 +266,7 @@ class _AppDrawerState extends State<AppDrawer> {
         trailing: const Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 20),
         onTap: () {
           Navigator.of(context).pop();
-          AppRouter.open(context, item.route);
+          AppRouter.open(context, item.route, fromDrawer: true);
         },
         contentPadding: const EdgeInsets.symmetric(horizontal: 20),
         dense: true,

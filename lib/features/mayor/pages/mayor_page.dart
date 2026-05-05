@@ -4,12 +4,14 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/widgets/branded_scaffold.dart';
+import 'mayor_biography_page.dart';
+import 'mayor_contact_page.dart';
+import 'mayor_message_page.dart';
+import 'mayor_photos_page.dart';
 
 class MayorPage extends StatelessWidget {
   const MayorPage({super.key});
 
-  static const _name = 'ORHAN ÇERKEZ';
-  static const _title = 'Çekmeköy Belediye Başkanı';
   static const _officePhone = '+90 (216) 600 0600';
   static const _officePhoneDial = '+902166000600';
   static const _email = 'baskan@cekmekoy.bel.tr';
@@ -23,22 +25,28 @@ class MayorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BrandedScaffold(
-      title: 'Başkan Hakkında',
+      title: 'Başkan',
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           _buildHero(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_name, style: AppTextStyles.h1),
-                const SizedBox(height: 4),
-                Text(
-                  _title,
-                  style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                RichText(
+                  text: TextSpan(
+                    style: AppTextStyles.h1,
+                    children: const [
+                      TextSpan(text: 'Orhan ', style: TextStyle(color: AppColors.primary)),
+                      TextSpan(text: 'ÇERKEZ', style: TextStyle(color: AppColors.accent)),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 4),
+                Text(AppStrings.mayorTitle,
+                    style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                 const SizedBox(height: 24),
                 Text(AppStrings.socialMediaTitle, style: AppTextStyles.bodyBold),
                 const SizedBox(height: 12),
@@ -46,20 +54,22 @@ class MayorPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 const Divider(height: 1),
                 const SizedBox(height: 16),
+                Text('İletişim', style: AppTextStyles.bodyBold),
+                const SizedBox(height: 12),
                 _contactRow(
                   icon: Icons.phone,
                   label: 'Ofis Telefonu',
                   value: _officePhone,
                   onTap: () => launchUrl(Uri.parse('tel:$_officePhoneDial')),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 _contactRow(
                   icon: Icons.mail_outline,
                   label: 'E-posta Adresi',
                   value: _email,
                   onTap: () => launchUrl(Uri.parse('mailto:$_email')),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 _contactRow(
                   icon: Icons.public,
                   label: 'Kişisel İnternet Sitesi',
@@ -70,14 +80,48 @@ class MayorPage extends StatelessWidget {
                     mode: LaunchMode.externalApplication,
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Divider(height: 1),
-                const SizedBox(height: 20),
-                Text('Özgeçmiş', style: AppTextStyles.bodyBold),
+                const SizedBox(height: 28),
+                Text('Detaylar', style: AppTextStyles.bodyBold),
                 const SizedBox(height: 12),
-                Text(
-                  '1962 yılında Ardahan\'da doğdu. 1980 yılından itibaren Çekmeköy\'de ikamet etmektedir. Anadolu Üniversitesi İktisadi ve İdari Bilimler Fakültesi İşletme Bölümü\'nü tamamladı. İstanbul Medeniyet Üniversitesi\'nde Kamu Yönetimi ve Şehircilik alanında yüksek lisans yaptı.\n\n2009 yılında Ataşehir Belediyesi\'nde İdari İşler Sorumlusu ve Ulaşım Hizmetleri Müdürü olarak göreve başladı. 2016-2023 yılları arasında Belediye Başkan Yardımcılığı görevini yürüttü.\n\n31 Mart 2024 yerel seçimlerinde Çekmeköy Belediye Başkanı seçildi ve 4 Nisan 2024 tarihinde göreve başladı. Çekmeköy\'ün tarihindeki en yüksek oy oranıyla seçilen başkan oldu.',
-                  style: AppTextStyles.body.copyWith(height: 1.6, fontSize: 14),
+                _hubTile(
+                  context,
+                  icon: Icons.format_quote,
+                  title: 'Başkanın Mesajı',
+                  subtitle: 'Hemşehrilerine seslenişi',
+                  page: const MayorMessagePage(),
+                  color: AppColors.primary,
+                ),
+                _hubTile(
+                  context,
+                  icon: Icons.school,
+                  title: 'Özgeçmiş',
+                  subtitle: 'Eğitim ve kariyer geçmişi',
+                  page: const MayorBiographyPage(),
+                  color: AppColors.primary,
+                ),
+                _hubTile(
+                  context,
+                  icon: Icons.photo_library,
+                  title: 'Başkanın Fotoğrafları',
+                  subtitle: 'Görev başında çekilmiş albüm',
+                  page: const MayorPhotosPage(),
+                  color: AppColors.accent,
+                ),
+                _hubTile(
+                  context,
+                  icon: Icons.diversity_3,
+                  title: 'Başkan ve Vatandaş',
+                  subtitle: 'Vatandaş ile bir araya geldiği anlar',
+                  page: const MayorPhotosPage(citizenView: true),
+                  color: AppColors.accent,
+                ),
+                _hubTile(
+                  context,
+                  icon: Icons.send,
+                  title: 'Başkana Mesaj Gönder',
+                  subtitle: 'Talep, öneri, teşekkür ve şikayetleriniz',
+                  page: const MayorContactPage(),
+                  color: AppColors.success,
                 ),
               ],
             ),
@@ -90,14 +134,11 @@ class MayorPage extends StatelessWidget {
   Widget _buildHero() {
     return Container(
       height: 280,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryLight,
-          ],
+          colors: [AppColors.primary, AppColors.primaryLight],
         ),
       ),
       child: Stack(
@@ -113,13 +154,10 @@ class MayorPage extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 0),
-            child: Image.asset(
-              AppStrings.mayorPhoto,
-              height: 260,
-              fit: BoxFit.contain,
-            ),
+          Image.asset(
+            AppStrings.mayorPhoto,
+            height: 260,
+            fit: BoxFit.contain,
           ),
         ],
       ),
@@ -165,33 +203,89 @@ class MayorPage extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 20, color: AppColors.primary),
             ),
-            child: Icon(icon, size: 20, color: AppColors.primary),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: AppTextStyles.caption),
+                  const SizedBox(height: 2),
+                  Text(value,
+                      style: AppTextStyles.bodyBold.copyWith(color: AppColors.primary)),
+                ],
+              ),
+            ),
+            if (trailing != null) Icon(trailing, color: AppColors.textTertiary, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _hubTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Widget page,
+    required Color color,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page)),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
               children: [
-                Text(label, style: AppTextStyles.caption),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: AppTextStyles.bodyBold.copyWith(color: AppColors.primary),
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: AppTextStyles.bodyBold),
+                      const SizedBox(height: 2),
+                      Text(subtitle,
+                          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: AppColors.textTertiary),
               ],
             ),
           ),
-          if (trailing != null) Icon(trailing, color: AppColors.textTertiary, size: 18),
-        ],
+        ),
       ),
     );
   }

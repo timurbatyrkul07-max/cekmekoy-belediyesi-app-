@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../mayor_message/data/mayor_message_api.dart';
 
 enum RequestType { info, request, thanks, complaint }
 
@@ -21,18 +23,33 @@ extension RequestTypeX on RequestType {
       };
 }
 
-class RequestPage extends StatefulWidget {
+class RequestPage extends ConsumerStatefulWidget {
   const RequestPage({super.key});
 
   @override
-  State<RequestPage> createState() => _RequestPageState();
+  ConsumerState<RequestPage> createState() => _RequestPageState();
 }
 
-class _RequestPageState extends State<RequestPage> {
+class _RequestPageState extends ConsumerState<RequestPage> {
   RequestType _type = RequestType.info;
   final _formKey = GlobalKey<FormState>();
   String? _neighborhood;
   String? _street;
+  bool _submitting = false;
+
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
 
   static const _neighborhoods = [
     'Merkez Mh.',
@@ -73,9 +90,9 @@ class _RequestPageState extends State<RequestPage> {
             _sectionHeader('Kişisel Bilgiler'),
             const SizedBox(height: 12),
             _input('TC Kimlik No', required: true, keyboard: TextInputType.number, maxLength: 11),
-            _input('Ad Soyad', required: true),
-            _input('Cep Telefonu', required: true, keyboard: TextInputType.phone, hint: '(___) ___ __ __'),
-            _input('E-Mail', keyboard: TextInputType.emailAddress),
+            _input('Ad Soyad', required: true, controller: _nameCtrl),
+            _input('Cep Telefonu', required: true, keyboard: TextInputType.phone, hint: '5XX XXX XX XX', controller: _phoneCtrl, maxLength: 11),
+            _input('E-Mail', required: true, keyboard: TextInputType.emailAddress, hint: 'ornek@email.com', controller: _emailCtrl),
             const SizedBox(height: 16),
             _sectionHeader('Talep / Şikayet Adres Bilgileri'),
             const SizedBox(height: 12),
@@ -89,19 +106,26 @@ class _RequestPageState extends State<RequestPage> {
             const SizedBox(height: 16),
             _sectionHeader('İçerik Bilgileri'),
             const SizedBox(height: 12),
-            _input('Açıklama', required: true, maxLines: 5),
+            _input('Açıklama', required: true, maxLines: 5, controller: _descCtrl),
             const SizedBox(height: 8),
             _photoPicker(),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _submit,
+              onPressed: _submitting ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text('Talebi Gönder', style: AppTextStyles.bodyBold.copyWith(color: Colors.white, fontSize: 16)),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                    )
+                  : Text('Talebi Gönder',
+                      style: AppTextStyles.bodyBold.copyWith(color: Colors.white, fontSize: 16)),
             ),
           ],
         ),
@@ -163,7 +187,8 @@ class _RequestPageState extends State<RequestPage> {
       TextInputType keyboard = TextInputType.text,
       String? hint,
       int maxLines = 1,
-      int? maxLength}) {
+      int? maxLength,
+      TextEditingController? controller}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -175,6 +200,7 @@ class _RequestPageState extends State<RequestPage> {
           ]),
           const SizedBox(height: 4),
           TextFormField(
+            controller: controller,
             keyboardType: keyboard,
             maxLines: maxLines,
             maxLength: maxLength,
@@ -254,24 +280,74 @@ class _RequestPageState extends State<RequestPage> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        icon: const Icon(Icons.check_circle, color: AppColors.success, size: 56),
-        title: const Text('Talebiniz Alındı'),
-        content: const Text('En kısa sürede tarafınıza dönüş yapılacaktır.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Tamam'),
+
+    final email = _emailCtrl.text.trim();
+    if (!RegExp(r'^[\w.+-]+@[\w-]+\.[\w.-]+$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Geçerli bir e-posta adresi giriniz'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
+
+    var phone = _phoneCtrl.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (phone.startsWith('90') && phone.length == 12) phone = phone.substring(2);
+    if (phone.startsWith('0') && phone.length == 11) phone = phone.substring(1);
+    if (!RegExp(r'^5\d{9}$').hasMatch(phone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Telefon numarası 5XX XXX XX XX formatında olmalıdır'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
+
+    final fullName = _nameCtrl.text.trim();
+    final parts = fullName.split(' ');
+    final name = parts.isNotEmpty ? parts.first : fullName;
+    final surname = parts.length > 1 ? parts.sublist(1).join(' ') : '-';
+
+    try {
+      final ok = await ref.read(mayorMessageRepositoryProvider).send(
+            name: name,
+            surname: surname,
+            phone: phone,
+            email: email,
+            title: '${_type.label} - ${_neighborhood ?? "Çekmeköy"}',
+            content: _descCtrl.text.trim(),
+          );
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          icon: Icon(
+            ok ? Icons.check_circle : Icons.error_outline,
+            color: ok ? AppColors.success : AppColors.error,
+            size: 56,
           ),
-        ],
-      ),
-    );
+          title: Text(ok ? 'Talebiniz Alındı' : 'Gönderilemedi'),
+          content: Text(ok
+              ? 'En kısa sürede tarafınıza dönüş yapılacaktır.'
+              : 'Talebinizi şu an gönderemedik. Lütfen daha sonra tekrar deneyin.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                if (ok) Navigator.pop(context);
+              },
+              child: const Text('Tamam'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata: $e'), backgroundColor: AppColors.error),
+      );
+    }
   }
 }
